@@ -53,10 +53,16 @@ def generateSDPRoot( ccbNode, rate ) :
 
     totalFrame = 0
     for item in sdpNode :
+        p_tag = 0
+        p_sprite = ""
+        p_anchor = [0.5, 0.5]
+        p_opacity = 255
+        p_color = [255, 255, 255]
+        p_skew = [1, 1]
         for propInfo in item['properties'] :
             propertyName = propInfo['name']
             propertyValue = propInfo['value']
-
+            p_rotation = 0.0
             if propertyName == 'tag' :
                 p_tag = int(propertyValue)
             if propertyName == 'displayFrame' :
@@ -185,6 +191,7 @@ def generateSDPRoot( ccbNode, rate ) :
             i = int(float(data['Frame']) * rate)
             if ( totalFrame < i ) :
                 totalFrame = i
+            strColor = "r=%d; g=%d; b=%d" %(data['color'][0], data['color'][1], data['color'][2])
             FrameData = ElementTree.SubElement( NodeData, 'FrameData', attrib = {'Frame'  : str(i), 
                                                                                  'PosX'   : str(list(data['position'])[0]),
                                                                                  'PosY'   : str(list(data['position'])[1]),
@@ -193,9 +200,9 @@ def generateSDPRoot( ccbNode, rate ) :
                                                                                  'SkewX'  : str(list(data['skew'])[0]),
                                                                                  'SkewY'  : str(list(data['skew'])[1]),
                                                                                  'Rot'    : str(data['rotation']),
-                                                                                 'Color'  : str(data['color']),
+                                                                                 'Color'  : strColor,
                                                                                  'Opacity': str(data['opacity']),
-                                                                                 'Visible': '0' } )
+                                                                                 'Visible': '1' } )
 
 
             if 'displayFrame' in data :
