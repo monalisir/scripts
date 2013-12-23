@@ -1,11 +1,12 @@
 #! /Users/Cooper/Work/python-env/lershare-env/bin/python
 # -*- coding: UTF-8 -*-
-import os,Image,sys
+import os,sys
 import json
 import plistlib
 from biplist import *
-from xml.etree import ElementTree
-from xml.etree.ElementTree import ElementTree as ETClass
+from lxml import etree as  ElementTree
+#from xml.etree import ElementTree
+#from xml.etree.ElementTree import ElementTree as ETClass
 #from xml.etree.ElementTree import ElementTree,Element 
 
 '''
@@ -59,6 +60,7 @@ def generateSDPRoot( ccbNode, rate ) :
         p_opacity = 255
         p_color = [255, 255, 255]
         p_skew = [1, 1]
+        p_position = [0, 0]
         for propInfo in item['properties'] :
             propertyName = propInfo['name']
             propertyValue = propInfo['value']
@@ -127,7 +129,7 @@ def generateSDPRoot( ccbNode, rate ) :
                 idx = str(f['time'])
                 if not frameInfo.has_key(idx) :
                     frameInfo[idx] = {}
-                frameInfo[idx]['displayFrame'] = f['value'][1]
+                frameInfo[idx]['displayFrame'] = f['value'][0]
         if animationFrames.has_key('skew') :
             for x in animationFrames['skew']['keyframes'] :
                 idx = str(x['time'])
@@ -210,7 +212,11 @@ def generateSDPRoot( ccbNode, rate ) :
 
         SkeletonAction.attrib['TotalFrame'] = str(totalFrame)
 
-    xmlRoot = ETClass(SkeletonParts)
+        #print ElementTree.tostring(SkeletonParts, encoding='utf-8').replace('/>', '/>\r\n')
+
+
+    #xmlRoot = ETClass(SkeletonParts)
+    xmlRoot = ElementTree.ElementTree(SkeletonParts)
 
     return xmlRoot
 
@@ -226,29 +232,23 @@ for filename in filenames:
 
     sdpFile = sdpFolder + '/' + filename.replace(".ccb", ".sdp")
 
-    try:
-        # get root element
-        ccbRoot = readPlist( filename )
-        sdpNodeList = {}
-        for child in ccbRoot['nodeGraph']['children']:
-            if child['displayName'].find('SDP_') != -1 :
-                act_name = child['displayName']
-                act_name = act_name.replace('SDP_', '')
-                sdpNodeList[act_name] = child['children']
+    #try:
+    # get root element
+    ccbRoot = readPlist( filename )
+    sdpNodeList = {}
+    for child in ccbRoot['nodeGraph']['children']:
+        if child['displayName'].find('SDP_') != -1 :
+            act_name = child['displayName']
+            act_name = act_name.replace('SDP_', '')
+            sdpNodeList[act_name] = child['children']
 
-        length = ccbRoot['sequences'][0]['length']
-        rate = ccbRoot['sequences'][0]['resolution']
+    length = ccbRoot['sequences'][0]['length']
+    rate = ccbRoot['sequences'][0]['resolution']
 
-        for sdp in sdpNodeList.keys() :
-            sdpNode = sdpNodeList[sdp]
-            xmlRoot = generateSDPRoot(sdpNode, rate)
-            fn = sdpFolder + '/' + sdp + '.sdp'
-            xmlRoot.write(fn, encoding="utf-8", xml_declaration=True)
-            fn = sdpFolder + '/' + sdp + '.xml'
-            xmlRoot.write(fn, encoding="utf-8", xml_declaration=True)
-
-    except InvalidPlistException, e:
-        print "Not a Plist or Plist Invalid:", e
-
+    for sdp in sdpNodeList.keys() :
+        sdpNode = sdpNodeList[sdp]
+        xmlRoot = generateSDPRoot(sdpNode, rate)
+        fn = sdpFolder + '/' + sdp + '.sdp'
+        xmlRoot.write(fn, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
 
